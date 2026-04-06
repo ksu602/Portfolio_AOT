@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>АОТ — Трекшен Портфеля</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f9;color:#1a1a1a}
+
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:white;padding:15px 28px;display:flex;align-items:center;justify-content:space-between}
+.ht{font-size:17px;font-weight:700}.hs{font-size:10px;opacity:.5;margin-top:1px}
+.hp{font-size:10px;opacity:.4;background:rgba(255,255,255,.1);padding:4px 10px;border-radius:5px}
+
+.tabs-bar{background:white;border-bottom:1px solid #e8e8ee;padding:0 20px;display:flex;overflow-x:auto;position:sticky;top:0;z-index:100;box-shadow:0 2px 5px rgba(0,0,0,.06)}
+.tab{padding:10px 14px;font-size:12px;font-weight:500;color:#aaa;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .12s;flex-shrink:0}
+.tab:hover{color:#555;background:#f8f8ff}
+.tab.active{color:#5b4cf5;border-bottom-color:#5b4cf5;font-weight:600}
+.tab-all.active{color:#1a1a2e;border-bottom-color:#1a1a2e}
+
+.toolbar{background:white;border-bottom:1px solid #eee;padding:7px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl{font-size:9.5px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.tgrp{display:flex;border:1.5px solid #e0e0e0;border-radius:6px;overflow:hidden}
+.tbtn{padding:5px 13px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:#888;border:none;font-family:inherit;transition:all .12s}
+.tbtn:hover{background:#f5f5ff;color:#5b4cf5}
+.tbtn.active{background:#5b4cf5;color:white}
+.rsel{padding:4px 8px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:11px;font-family:inherit;background:white;color:#444;cursor:pointer}
+.rsel:focus{outline:none;border-color:#5b4cf5}
+
+.container{max-width:1380px;margin:0 auto;padding:16px 14px}
+
+.ss{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:16px}
+.sc{background:white;border-radius:8px;padding:11px 14px;box-shadow:0 1px 3px rgba(0,0,0,.05);border-top:3px solid #e0e0e0}
+.sc.g{border-top-color:#10b981}.sc.p{border-top-color:#6c63ff}.sc.r{border-top-color:#ef4444}.sc.a{border-top-color:#f59e0b}.sc.b{border-top-color:#3b82f6}
+.sl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:3px}
+.sv{font-size:18px;font-weight:700;line-height:1}
+.sb{font-size:9px;color:#aaa;margin-top:2px}
+
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.cc{background:white;border-radius:10px;padding:15px 17px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.cc.full{grid-column:1/-1}
+.ct{font-size:12px;font-weight:600;color:#333}
+.cs{font-size:10px;color:#bbb;margin-top:1px;margin-bottom:10px}
+.cw{position:relative;height:190px}
+.nodmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:11px;pointer-events:none}
+
+.panel{background:white;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:14px}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ptitle{font-size:12.5px;font-weight:600;color:#222}
+.phint{font-size:9.5px;color:#aaa;background:#f5f5ff;padding:2px 8px;border-radius:4px}
+
+/* Section sub-tabs */
+.stabs{display:flex;gap:0;border-bottom:2px solid #eee;margin-bottom:12px}
+.stab{padding:7px 16px;font-size:12px;font-weight:500;color:#aaa;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .12s}
+.stab:hover{color:#555}
+.stab.active{color:#5b4cf5;border-bottom-color:#5b4cf5;font-weight:600}
+
+/* Period filter in table */
+.tbl-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:7px 10px;background:#f8f8ff;border-radius:7px}
+.tbl-tl{font-size:9.5px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.tbl-tgrp{display:flex;border:1.5px solid #ddd;border-radius:5px;overflow:hidden}
+.tbl-tbtn{padding:4px 11px;font-size:10.5px;font-weight:500;cursor:pointer;background:white;color:#888;border:none;font-family:inherit;transition:all .1s}
+.tbl-tbtn.active{background:#5b4cf5;color:white}
+.tbl-tbtn:hover:not(.active){background:#f0efff;color:#5b4cf5}
+
+.tw{overflow-x:auto}
+table.mt{width:100%;border-collapse:collapse;font-size:11px}
+table.mt th{padding:6px 8px;text-align:left;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#777;border-bottom:2px solid #eee;background:#f8f8ff;white-space:nowrap}
+table.mt td{padding:3px 5px;border-bottom:1px solid #f2f2f2;vertical-align:middle}
+table.mt tr:last-child td{border-bottom:none}
+table.mt tr:hover td{background:#fafafa}
+
+.mlbl{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9.5px;font-weight:500;white-space:nowrap}
+.ml-past{background:#f3f4f6;color:#9ca3af}.ml-now{background:#d1fae5;color:#065f46;font-weight:700}.ml-plan{background:#dbeafe;color:#1e40af}
+.ml-q{background:#ede9fe;color:#5b21b6}
+
+input.ni{width:80px;padding:3px 5px;border:1.5px solid #e8e8ee;border-radius:4px;font-size:10.5px;font-family:inherit;text-align:right;background:#fafafa;color:#333}
+input.ni:focus{outline:none;border-color:#6c63ff;background:white}
+input.ni.f{background:white;font-weight:500}
+input.ni.neg{color:#ef4444}
+input.ti{width:130px;padding:3px 5px;border:1.5px solid #e8e8ee;border-radius:4px;font-size:10.5px;font-family:inherit;background:#fafafa}
+input.ti:focus{outline:none;border-color:#6c63ff;background:white}
+input.ci2{width:155px;padding:3px 5px;border:1.5px solid #e8e8ee;border-radius:4px;font-size:10px;font-family:inherit;background:#fafafa}
+input.ci2:focus{outline:none;border-color:#6c63ff;background:white}
+select.ss2s{padding:3px 5px;border:1.5px solid #e8e8ee;border-radius:4px;font-size:10px;font-family:inherit;background:white;cursor:pointer}
+.dim-cell{color:#ccc;font-size:10px;text-align:center}
+
+.add-btn{padding:3px 12px;background:#f0efff;color:#5b4cf5;border:1.5px solid #d4d2ff;border-radius:5px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.add-btn:hover{background:#e5e3ff}
+
+.cst{display:inline-flex;align-items:center;padding:2px 6px;border-radius:99px;font-size:9.5px;font-weight:500;white-space:nowrap}
+.cst-lead{background:#ede9fe;color:#5b21b6}.cst-neg{background:#fef3c7;color:#92400e}.cst-signed{background:#ffedd5;color:#9a3412}.cst-active{background:#dcfce7;color:#15803d}.cst-lost{background:#fee2e2;color:#991b1b}
+
+table.sum{width:100%;border-collapse:collapse;font-size:11px}
+table.sum th{padding:6px 10px;text-align:left;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#777;border-bottom:2px solid #eee;background:#f8f8ff;white-space:nowrap}
+table.sum td{padding:7px 10px;border-bottom:1px solid #f2f2f2}
+table.sum tr:last-child td{border-bottom:none}
+.badge{display:inline-flex;align-items:center;padding:1px 7px;border-radius:99px;font-size:9.5px;font-weight:500}
+.b-ok{background:#d1fae5;color:#065f46}.b-warn{background:#fef3c7;color:#92400e}.b-danger{background:#fee2e2;color:#991b1b}.b-empty{background:#f3f4f6;color:#9ca3af}
+.nr{text-align:right;font-variant-numeric:tabular-nums}
+.dim{color:#ccc}
+
+.footer{text-align:center;color:#bbb;font-size:10px;padding:13px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:20px">📊</span>
+    <div><div class="ht">АОТ / Портфель — Трекшен</div><div class="hs">Вводи данные → графики и таблица обновляются сразу</div></div>
+  </div>
+  <div class="hp" id="syncBadge">📡 Данные из Notion · Апрель 2026</div>
+</div>
+
+<div class="tabs-bar" id="tabsBar"></div>
+
+<div class="toolbar">
+  <span class="tl">Период:</span>
+  <div class="tgrp">
+    <button class="tbtn active" id="btnM" onclick="setPV('monthly')">📅 По месяцам</button>
+    <button class="tbtn" id="btnQ" onclick="setPV('quarterly')">📊 По кварталам</button>
+  </div>
+  <span class="tl" style="margin-left:6px">Диапазон:</span>
+  <select class="rsel" id="rfrom" onchange="refresh()">
+    <option value="0">с Окт 2025</option>
+    <option value="3" selected>с Янв 2026</option>
+  </select>
+  <span style="font-size:11px;color:#ccc">→</span>
+  <select class="rsel" id="rto" onchange="refresh()">
+    <option value="5">по Мар 2026</option>
+    <option value="8">по Июн 2026</option>
+    <option value="11">по Сен 2026</option>
+    <option value="14" selected>по Дек 2026</option>
+  </select>
+</div>
+
+<div class="container">
+
+  <div class="ss" id="statsStrip"></div>
+
+  <div class="cg">
+    <div class="cc">
+      <div class="ct">📈 Выручка (GMV)</div><div class="cs" id="gmvSub">тыс руб</div>
+      <div class="cw"><canvas id="gmvChart"></canvas><div class="nodmsg" id="gmvE" style="display:none">Введи данные ↓</div></div>
+    </div>
+    <div class="cc">
+      <div class="ct">🔥 Burn Rate / EBIT</div><div class="cs" id="burnSub">тыс руб</div>
+      <div class="cw"><canvas id="burnChart"></canvas><div class="nodmsg" id="burnE" style="display:none">Введи данные ↓</div></div>
+    </div>
+    <div class="cc full" id="pfCard">
+      <div class="ct">🏢 Портфель — Выручка YTD (с начала года по последний заполненный месяц)</div><div class="cs" id="pfSub">Все компании · нарастающим итогом 2026 · серый = нет данных</div>
+      <div class="cw" style="height:140px"><canvas id="pfChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CLIENTS PANEL -->
+  <div class="panel">
+    <div class="ph">
+      <div class="ptitle">🤝 Клиенты — <span id="panelCmpName">все компании</span></div>
+      <div class="phint">Данные из Notion</div>
+    </div>
+    <div id="clientsContent"></div>
+  </div>
+
+  <!-- COMMENTS PANEL -->
+  <div class="panel">
+    <div class="ph" style="margin-bottom:10px">
+      <div class="ptitle">📝 Комментарии и статус по компаниям</div>
+      <div class="phint">Последняя запись из Notion</div>
+    </div>
+    <table class="sum"><thead><tr><th>Компания</th><th>Последний период</th><th>Статус</th><th>Майлстоуны / Комментарий</th></tr></thead><tbody id="commentsTbody"></tbody></table>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="panel">
+    <div class="ph" style="margin-bottom:10px">
+      <div class="ptitle">📋 Сводка — последний период с данными</div>
+      <div class="phint">Данные из Notion</div>
+    </div>
+    <table class="sum"><thead><tr><th>Компания</th><th>Период</th><th class="nr">Выручка</th><th class="nr">EBIT</th><th class="nr">GP %</th><th class="nr">Cash</th><th>Статус</th><th>Клиентов активных</th></tr></thead><tbody id="sumTbody"></tbody></table>
+  </div>
+
+</div>
+<div class="footer">АО «Трансформация» / ИИИ МФТИ · Апрель 2026 · Данные из Notion · Обновляется автоматически</div>
+
+<script>
+// ══════════════════════════════
+// PERIODS
+// ══════════════════════════════
+const MO=['Окт 2025','Ноя 2025','Дек 2025','Янв 2026','Фев 2026','Мар 2026','Апр 2026','Май 2026','Июн 2026','Июл 2026','Авг 2026','Сен 2026','Окт 2026','Ноя 2026','Дек 2026'];
+const MS=['окт.25','ноя.25','дек.25','янв.26','фев.26','мар.26','апр.26','май.26','июн.26','июл.26','авг.26','сен.26','окт.26','ноя.26','дек.26'];
+const QS=[{l:'Q4 2025',s:'Q4\'25',i:[0,1,2]},{l:'Q1 2026',s:'Q1\'26',i:[3,4,5]},{l:'Q2 2026',s:'Q2\'26',i:[6,7,8]},{l:'Q3 2026',s:'Q3\'26',i:[9,10,11]},{l:'Q4 2026',s:'Q4\'26',i:[12,13,14]}];
+const NOW=5;
+
+// ══════════════════════════════
+// COMPANIES
+// ══════════════════════════════
+const COMP=['СП RMR (n-ii lab)','НеоАвтоматика','HiveTrace','СейсмикЛаб','ARGUS','Маслов'];
+const PAL=['#6c63ff','#10b981','#f59e0b','#ef4444','#3b82f6','#ec4899'];
+const CLR={}; COMP.forEach((c,i)=>CLR[c]=PAL[i]);
+
+// ══════════════════════════════
+// DATA MODEL
+// ══════════════════════════════
+const M={};
+COMP.forEach(c=>{M[c]=MO.map(()=>({revenue:null,ebit:null,gpm:null,cash:null,status:'',comment:''}));});
+const MC={};
+COMP.forEach(c=>{MC[c]=[];});
+
+// NOTION_SYNC_TS=
+// NOTION_SYNC_START
+// Pre-fill СП RMR metrics
+const r=M['СП RMR (n-ii lab)'];
+[[0,null,-3505,''],[1,null,-3505,''],[2,null,-3505,''],
+ [3,6000,-3505,'Q1 план 18M/кв'],[4,6000,-3505,''],[5,6000,-3505,'Burn 6мес: -21 031 тыс'],
+ [6,18333,null,'Q2 план 55M/кв'],[7,18333,null,''],[8,18334,null,''],
+ [9,28000,null,'Q3 план 84M/кв'],[10,28000,null,''],[11,28000,null,''],
+ [12,54333,null,'Q4 план 163M/кв'],[13,54333,null,''],[14,54334,null,'Итого год: 320M']
+].forEach(([i,rev,ebit,cm])=>{r[i].revenue=rev;r[i].ebit=ebit;r[i].status='🟡 Есть вопросы';r[i].comment=cm;});
+r[5].cash=11389;
+
+// Pre-fill СП RMR clients
+const rc=MC['СП RMR (n-ii lab)'];
+rc.push({mi:4,name:'Beeline',dealSize:null,status:'active',comment:'Действующий партнёр'});
+rc.push({mi:5,name:'ВкусВилл',dealSize:100000,status:'signed',comment:'В контрактации'});
+rc.push({mi:5,name:'ВсеИнструменты',dealSize:50000,status:'signed',comment:'В контрактации'});
+rc.push({mi:5,name:'РВИО',dealSize:50000,status:'signed',comment:'В контрактации'});
+rc.push({mi:5,name:'Beyond Taylor',dealSize:20000,status:'signed',comment:'В контрактации'});
+rc.push({mi:5,name:'Спартак',dealSize:4500,status:'neg',comment:'Переговоры'});
+rc.push({mi:6,name:'GigaChat',dealSize:null,status:'lead',comment:'Воронка'});
+rc.push({mi:6,name:'Астра',dealSize:null,status:'lead',comment:'Воронка'});
+rc.push({mi:6,name:'ПСБ Спецтех',dealSize:null,status:'lead',comment:'Воронка'});
+rc.push({mi:6,name:'Mindbox',dealSize:null,status:'lead',comment:'Воронка'});
+rc.push({mi:6,name:'3 Streams',dealSize:null,status:'lead',comment:'Воронка'});
+rc.push({mi:6,name:'Ростелеком',dealSize:null,status:'lead',comment:'Воронка'});
+// NOTION_SYNC_END
+
+// ══════════════════════════════
+// STATE
+// ══════════════════════════════
+let activeCmp='all', periodView='monthly';
+
+// ══════════════════════════════
+// CHARTS
+// ══════════════════════════════
+let gmv,burn,pf;
+function initCharts(){
+  const sc={y:{ticks:{callback:v=>Math.abs(v)>=1000?(v/1000).toFixed(0)+'M':v,font:{size:9}},grid:{color:'#f0f0f0'}},x:{grid:{display:false},ticks:{font:{size:8.5},maxRotation:40}}};
+  const pl={legend:{position:'top',labels:{font:{size:9.5},boxWidth:10,padding:8}},tooltip:{callbacks:{label:c=>c.parsed.y!=null?` ${fN(c.parsed.y)} тыс`:' —'}}};
+  const o={responsive:true,maintainAspectRatio:false,animation:{duration:200},plugins:pl,scales:sc};
+  gmv =new Chart(document.getElementById('gmvChart'), {type:'bar',data:{labels:[],datasets:[]},options:JSON.parse(JSON.stringify(o))});
+  burn=new Chart(document.getElementById('burnChart'),{type:'bar',data:{labels:[],datasets:[]},options:JSON.parse(JSON.stringify(o))});
+  pf  =new Chart(document.getElementById('pfChart'),  {type:'bar',data:{labels:COMP,datasets:[{label:'',data:[],backgroundColor:[],borderColor:[],borderWidth:2,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y!=null?` ${fN(c.parsed.y)} тыс`:' нет данных'}}},scales:JSON.parse(JSON.stringify(sc))}});
+}
+
+Chart.register({id:'nl',afterDraw(chart){
+  if(periodView!=='monthly')return;
+  const fr=+document.getElementById('rfrom').value,to=+document.getElementById('rto').value;
+  const vi=NOW-fr;if(vi<0||vi>to-fr)return;
+  const md=chart.getDatasetMeta(0);if(!md?.data?.[vi])return;
+  const x=md.data[vi].x,{ctx,chartArea:{top,bottom}}=chart;
+  ctx.save();ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);
+  ctx.strokeStyle='#ef4444';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.stroke();
+  ctx.fillStyle='#ef4444';ctx.font='8.5px sans-serif';ctx.fillText('сейчас',x+3,top+8);ctx.restore();
+}});
+
+function updateCharts(){
+  const fr=+document.getElementById('rfrom').value,to=+document.getElementById('rto').value;
+  const cs=activeCmp==='all'?COMP:[activeCmp];
+  let lb,gR,gE,gC;
+  if(periodView==='monthly'){
+    lb=MS.slice(fr,to+1);
+    gR=c=>M[c].slice(fr,to+1).map(d=>d.revenue);
+    gE=c=>M[c].slice(fr,to+1).map(d=>d.ebit);
+    gC=c=>M[c].slice(fr,to+1).map(d=>d.cash);
+  } else {
+    const vq=QS.filter(q=>q.i.some(i=>i>=fr&&i<=to));
+    lb=vq.map(q=>q.s);
+    const ag=(c,f)=>vq.map(q=>{const v=q.i.filter(i=>i>=fr&&i<=to).map(i=>M[c][i][f]).filter(v=>v!=null);return v.length?v.reduce((a,b)=>a+b,0):null;});
+    gR=c=>ag(c,'revenue');gE=c=>ag(c,'ebit');
+    gC=c=>vq.map(q=>{const is=q.i.filter(i=>i>=fr&&i<=to).reverse();for(const i of is)if(M[c][i].cash!=null)return M[c][i].cash;return null;});
+  }
+  gmv.data.labels=lb;burn.data.labels=lb;
+  gmv.data.datasets=cs.map(c=>({label:c,data:gR(c),backgroundColor:CLR[c]+'99',borderColor:CLR[c],borderWidth:1.5,borderRadius:3,spanGaps:true}));
+  const bds=cs.map(c=>({label:c+' EBIT',data:gE(c),backgroundColor:CLR[c]+'88',borderColor:CLR[c],borderWidth:1.5,borderRadius:3,spanGaps:false}));
+  if(cs.length===1){const cv=gC(cs[0]);if(cv.some(v=>v!=null))bds.push({label:'Cash',data:cv,type:'line',borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.08)',pointBackgroundColor:'#f59e0b',pointRadius:3,tension:0.3,fill:false,spanGaps:true});}
+  burn.data.datasets=bds;
+  document.getElementById('gmvE').style.display=cs.some(c=>gR(c).some(v=>v!=null))?'none':'flex';
+  document.getElementById('burnE').style.display=cs.some(c=>gE(c).some(v=>v!=null))?'none':'flex';
+  gmv.update();burn.update();
+  // Portfolio YTD: cumulative revenue Jan–lastFilledMonth 2026
+  const YTD_START=3; // Jan 2026 = index 3
+  const ytdVals=COMP.map(c=>{
+    let sum=null,lastFilled=-1;
+    for(let i=YTD_START;i<MO.length;i++){if(M[c][i].revenue!=null)lastFilled=i;}
+    if(lastFilled<0)return null;
+    for(let i=YTD_START;i<=lastFilled;i++){if(M[c][i].revenue!=null){sum=(sum||0)+M[c][i].revenue;}}
+    return sum;
+  });
+  pf.data.datasets[0].data=ytdVals;
+  pf.data.datasets[0].backgroundColor=COMP.map((c,i)=>ytdVals[i]!=null?CLR[c]+'bb':'#e5e7eb');
+  pf.data.datasets[0].borderColor=COMP.map((c,i)=>ytdVals[i]!=null?CLR[c]:'#d1d5db');
+  pf.update();
+  // Update subtitle with YTD range
+  const lastMonths=COMP.map(c=>{for(let i=MO.length-1;i>=YTD_START;i--)if(M[c][i].revenue!=null)return MO[i];return null;}).filter(Boolean);
+  const latestMonth=lastMonths.length?lastMonths[0]:'—';
+  document.getElementById('pfSub').textContent=`Все компании · YTD Янв 2026 → ${latestMonth} · нарастающим итогом`;
+  document.getElementById('gmvSub').textContent='тыс руб · '+(periodView==='monthly'?'помесячно':'по кварталам');
+  document.getElementById('burnSub').textContent='тыс руб · '+(periodView==='monthly'?'помесячно':'по кварталам');
+}
+
+function setPV(v){
+  periodView=v;
+  document.getElementById('btnM').classList.toggle('active',v==='monthly');
+  document.getElementById('btnQ').classList.toggle('active',v==='quarterly');
+  updateCharts();
+}
+function refresh(){updateCharts();}
+
+// ══════════════════════════════
+// TABS
+// ══════════════════════════════
+function buildTabs(){
+  const bar=document.getElementById('tabsBar');bar.innerHTML='';
+  const all=el('div','tab tab-all'+(activeCmp==='all'?' active':''));
+  all.textContent='🏢 Все';all.onclick=()=>setC('all');bar.appendChild(all);
+  COMP.forEach((c,i)=>{
+    const t=el('div','tab'+(activeCmp===c?' active':''));
+    t.textContent=['🟣','🟢','🔵','🟠','🔴','🟡'][i]+' '+c;t.onclick=()=>setC(c);bar.appendChild(t);
+  });
+}
+function setC(c){
+  activeCmp=c;buildTabs();updateStats();renderClients();renderComments();updateSummary();updateCharts();
+  document.getElementById('panelCmpName').textContent=c==='all'?'все компании':c;
+  document.getElementById('pfCard').style.display=c==='all'?'':'none';
+}
+
+
+// ══════════════════════════════
+// STATS
+// ══════════════════════════════
+function updateStats(){
+  const cs=activeCmp==='all'?COMP:[activeCmp];
+  let rv=0,hr=false,eb=0,he=false,ca=null,yd=0,hy=false;
+  cs.forEach(c=>{
+    const d=M[c][NOW];
+    if(d.revenue!=null){rv+=d.revenue;hr=true;}
+    if(d.ebit!=null){eb+=d.ebit;he=true;}
+    if(d.cash!=null)ca=(ca||0)+d.cash;
+    [3,4,5].forEach(i=>{if(M[c][i].revenue!=null){yd+=M[c][i].revenue;hy=true;}});
+  });
+  const tcl=cs.reduce((s,c)=>s+new Set(MC[c].map(x=>x.name).filter(n=>n)).size,0);
+  document.getElementById('statsStrip').innerHTML=`
+    <div class="sc g"><div class="sl">Выручка мар 2026</div><div class="sv">${hr?fN(rv):'—'}</div><div class="sb">тыс руб</div></div>
+    <div class="sc p"><div class="sl">YTD Q1 2026</div><div class="sv">${hy?fN(yd):'—'}</div><div class="sb">янв–мар 2026</div></div>
+    <div class="sc r"><div class="sl">EBIT мар 2026</div><div class="sv" style="${he&&eb<0?'color:#ef4444':''}">${he?fN(eb):'—'}</div><div class="sb">тыс руб</div></div>
+    <div class="sc a"><div class="sl">Cash остаток</div><div class="sv" style="${ca!=null&&ca<10000?'color:#f59e0b':''}">${ca!=null?fN(ca):'—'}</div><div class="sb">тыс руб · мар 2026</div></div>
+    <div class="sc b"><div class="sl">Всего клиентов</div><div class="sv">${tcl}</div><div class="sb">в воронке</div></div>
+  `;
+}
+
+
+// ══════════════════════════════
+// CLIENTS TABLE (read-only)
+// ══════════════════════════════
+const CST={lead:'🔵 Лид / Первый контакт',neg:'🟡 Переговоры',signed:'🟠 Подписание',active:'🟢 Активный клиент',lost:'🔴 Отказ'};
+const CSTC={lead:'cst-lead',neg:'cst-neg',signed:'cst-signed',active:'cst-active',lost:'cst-lost'};
+
+function renderClients(){
+  const cont=document.getElementById('clientsContent');cont.innerHTML='';
+  const cs=activeCmp==='all'?COMP:[activeCmp];
+  cs.forEach(c=>{
+    const clients=MC[c]||[];
+    const wrap=el('div','');wrap.style.cssText='margin-bottom:18px';
+    const hdr=el('div','');hdr.style.cssText=`display:flex;align-items:center;gap:10px;margin-bottom:7px;padding-bottom:6px;border-bottom:2px solid ${CLR[c]}22`;
+    hdr.innerHTML=`<span style="font-size:12px;font-weight:700;color:${CLR[c]}">${c}</span>`;
+    // Status chips summary
+    const sc={};clients.forEach(x=>{sc[x.status]=(sc[x.status]||0)+1;});
+    Object.entries(sc).forEach(([s,n])=>{const ch=el('span','cst '+CSTC[s]);ch.style.fontSize='9px';ch.textContent=`${CST[s]} ×${n}`;hdr.appendChild(ch);});
+    wrap.appendChild(hdr);
+    if(clients.length===0){
+      const e=el('div','');e.style.cssText='color:#ccc;font-size:11px;padding:6px 0';
+      e.textContent='Нет данных — заполни таблицу клиентов в Notion';wrap.appendChild(e);
+    } else {
+      const tw=el('div','tw'),tbl=el('table','mt');
+      tbl.innerHTML='<thead><tr><th>Месяц</th><th>Клиент / Партнёр</th><th class="nr">Сумма (тыс руб)</th><th>Статус</th><th>Комментарий</th></tr></thead>';
+      const tbody=el('tbody','');
+      clients.forEach(row=>{
+        const tr=el('tr','');
+        const mo=MO[row.mi]||'—';
+        const cls=row.mi<NOW?'ml-past':(row.mi===NOW?'ml-now':'ml-plan');
+        const stLabel=CST[row.status]||row.status||'—';
+        const stCls=CSTC[row.status]||'';
+        tr.innerHTML=`
+          <td><span class="mlbl ${cls}">${mo}</span></td>
+          <td><strong style="font-size:11px">${row.name||'—'}</strong></td>
+          <td class="nr" style="font-size:11px;font-weight:500">${row.dealSize!=null?fN(row.dealSize):'<span class="dim">—</span>'}</td>
+          <td><span class="cst ${stCls}" style="font-size:9.5px">${stLabel}</span></td>
+          <td style="font-size:10px;color:#666;max-width:180px">${row.comment||'<span class="dim">—</span>'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);tw.appendChild(tbl);wrap.appendChild(tw);
+    }
+    cont.appendChild(wrap);
+  });
+}
+
+// ══════════════════════════════
+// COMMENTS TABLE
+// ══════════════════════════════
+function renderComments(){
+  const tbody=document.getElementById('commentsTbody');tbody.innerHTML='';
+  const cs=activeCmp==='all'?COMP:[activeCmp];
+  cs.forEach(c=>{
+    // Find last month with any data
+    let li=-1;
+    for(let i=MO.length-1;i>=0;i--){const d=M[c][i];if(d.status||d.comment||d.revenue!=null||d.ebit!=null){li=i;break;}}
+    const d=li>=0?M[c][li]:null;
+    const m=li>=0?MO[li]:null;
+    const cls=li>=0?(li<NOW?'ml-past':(li===NOW?'ml-now':'ml-plan')):'';
+    const badge=d?.status?`<span class="badge ${d.status.includes('🟢')?'b-ok':d.status.includes('🟡')?'b-warn':d.status.includes('🔴')?'b-danger':'b-empty'}">${d.status}</span>`:`<span class="badge b-empty">— нет данных</span>`;
+    const comment=d?.comment||'';
+    const row=el('tr','');
+    row.innerHTML=`
+      <td><strong style="color:${CLR[c]};font-size:11px">${c}</strong></td>
+      <td>${m?`<span class="mlbl ${cls}">${m}</span>`:'<span class="dim">—</span>'}</td>
+      <td>${badge}</td>
+      <td style="font-size:10.5px;color:#444;max-width:300px">${comment||'<span class="dim">—</span>'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// ══════════════════════════════
+// SUMMARY TABLE
+// ══════════════════════════════
+function updateSummary(){
+  const tbody=document.getElementById('sumTbody');tbody.innerHTML='';
+  COMP.forEach(c=>{
+    let li=-1;for(let i=MO.length-1;i>=0;i--){const d=M[c][i];if(d.revenue!=null||d.ebit!=null||d.cash!=null){li=i;break;}}
+    const d=li>=0?M[c][li]:null,m=li>=0?MO[li]:null;
+    const cls=li>=0?(li<NOW?'ml-past':(li===NOW?'ml-now':'ml-plan')):'';
+    const badge=d?.status?`<span class="badge ${d.status.includes('🟢')?'b-ok':d.status.includes('🟡')?'b-warn':'b-danger'}">${d.status}</span>`:`<span class="badge b-empty">⬜ Нет данных</span>`;
+    const row=el('tr','');
+    const actClients=MC[c].filter(x=>x.status==='active').length;
+    const signedClients=MC[c].filter(x=>x.status==='signed').length;
+    const aclLabel=actClients>0||signedClients>0
+      ?`<span style="font-size:10px">${actClients>0?`🟢 ${actClients} актив.`:''} ${signedClients>0?`🟠 ${signedClients} подпис.`:''}</span>`
+      :`<span class="dim">—</span>`;
+    row.innerHTML=`
+      <td><strong style="color:${CLR[c]}">${c}</strong></td>
+      <td>${m?`<span class="mlbl ${cls}">${m}</span>`:'<span class="dim">—</span>'}</td>
+      <td class="nr">${d?.revenue!=null?fN(d.revenue):'<span class="dim">—</span>'}</td>
+      <td class="nr" style="${d?.ebit!=null&&d.ebit<0?'color:#ef4444':''}">${d?.ebit!=null?fN(d.ebit):'<span class="dim">—</span>'}</td>
+      <td class="nr">${d?.gpm!=null?d.gpm+'%':'<span class="dim">—</span>'}</td>
+      <td class="nr" style="${d?.cash!=null&&d.cash<5000?'color:#f59e0b':''}">${d?.cash!=null?fN(d.cash):'<span class="dim">—</span>'}</td>
+      <td>${badge}</td>
+      <td>${aclLabel}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// ══════════════════════════════
+// UTILS
+// ══════════════════════════════
+function el(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e;}
+function fN(v){return v==null?'—':v.toLocaleString('ru');}
+
+// ══════════════════════════════
+// BOOT
+// ══════════════════════════════
+initCharts();buildTabs();updateStats();renderClients();renderComments();updateSummary();updateCharts();
+// Show sync timestamp if present
+(function(){
+  const m=document.documentElement.innerHTML.match(/NOTION_SYNC_TS=([^\n\r]+)/);
+  const b=document.getElementById('syncBadge');
+  if(m&&m[1].trim()){b.textContent='🔄 Обновлено из Notion: '+m[1].trim();}
+})();
+</script>
+</body>
+</html>
