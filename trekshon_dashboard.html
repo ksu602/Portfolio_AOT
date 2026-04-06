@@ -209,32 +209,35 @@ COMP.forEach(c=>{M[c]=MO.map(()=>({revenue:null,ebit:null,gpm:null,cash:null,sta
 const MC={};
 COMP.forEach(c=>{MC[c]=[];});
 
-// NOTION_SYNC_TS=
+// NOTION_SYNC_TS=06.04.2026 15:02 МСК
 // NOTION_SYNC_START
-// Pre-fill СП RMR metrics
-const r=M['СП RMR (n-ii lab)'];
-[[0,null,-3505,''],[1,null,-3505,''],[2,null,-3505,''],
- [3,6000,-3505,'Q1 план 18M/кв'],[4,6000,-3505,''],[5,6000,-3505,'Burn 6мес: -21 031 тыс'],
- [6,18333,null,'Q2 план 55M/кв'],[7,18333,null,''],[8,18334,null,''],
- [9,28000,null,'Q3 план 84M/кв'],[10,28000,null,''],[11,28000,null,''],
- [12,54333,null,'Q4 план 163M/кв'],[13,54333,null,''],[14,54334,null,'Итого год: 320M']
-].forEach(([i,rev,ebit,cm])=>{r[i].revenue=rev;r[i].ebit=ebit;r[i].status='🟡 Есть вопросы';r[i].comment=cm;});
-r[5].cash=11389;
+// Синхронизировано из Notion: 06.04.2026 15:02 МСК
 
-// Pre-fill СП RMR clients
-const rc=MC['СП RMR (n-ii lab)'];
-rc.push({mi:4,name:'Beeline',dealSize:null,status:'active',comment:'Действующий партнёр'});
-rc.push({mi:5,name:'ВкусВилл',dealSize:100000,status:'signed',comment:'В контрактации'});
-rc.push({mi:5,name:'ВсеИнструменты',dealSize:50000,status:'signed',comment:'В контрактации'});
-rc.push({mi:5,name:'РВИО',dealSize:50000,status:'signed',comment:'В контрактации'});
-rc.push({mi:5,name:'Beyond Taylor',dealSize:20000,status:'signed',comment:'В контрактации'});
-rc.push({mi:5,name:'Спартак',dealSize:4500,status:'neg',comment:'Переговоры'});
-rc.push({mi:6,name:'GigaChat',dealSize:null,status:'lead',comment:'Воронка'});
-rc.push({mi:6,name:'Астра',dealSize:null,status:'lead',comment:'Воронка'});
-rc.push({mi:6,name:'ПСБ Спецтех',dealSize:null,status:'lead',comment:'Воронка'});
-rc.push({mi:6,name:'Mindbox',dealSize:null,status:'lead',comment:'Воронка'});
-rc.push({mi:6,name:'3 Streams',dealSize:null,status:'lead',comment:'Воронка'});
-rc.push({mi:6,name:'Ростелеком',dealSize:null,status:'lead',comment:'Воронка'});
+M['СП RMR (n-ii lab)'][3].revenue=6000;M['СП RMR (n-ii lab)'][3].ebit=3505;M['СП RMR (n-ii lab)'][3].burn=3505;M['СП RMR (n-ii lab)'][3].status='🟡';
+M['СП RMR (n-ii lab)'][4].revenue=6000;M['СП RMR (n-ii lab)'][4].ebit=3505;M['СП RMR (n-ii lab)'][4].burn=3505;M['СП RMR (n-ii lab)'][4].status='🟡';
+M['СП RMR (n-ii lab)'][5].revenue=6000;M['СП RMR (n-ii lab)'][5].ebit=3505;M['СП RMR (n-ii lab)'][5].burn=3505;M['СП RMR (n-ii lab)'][5].cash=11389;M['СП RMR (n-ii lab)'][5].status='🟡';M['СП RMR (n-ii lab)'][5].comment='Beeline act. | Закрыть GigaChat, Астра, ПСБ';
+M['СП RMR (n-ii lab)'][6].revenue=18333;
+M['СП RMR (n-ii lab)'][7].revenue=18333;
+M['СП RMR (n-ii lab)'][8].revenue=18334;
+M['СП RMR (n-ii lab)'][9].revenue=28000;
+M['СП RMR (n-ii lab)'][10].revenue=28000;
+M['СП RMR (n-ii lab)'][11].revenue=28000;
+M['СП RMR (n-ii lab)'][12].revenue=54333;
+M['СП RMR (n-ii lab)'][13].revenue=54333;
+M['СП RMR (n-ii lab)'][14].revenue=54334;
+MC['СП RMR (n-ii lab)'].push({mi:4,name:'Beeline',dealSize:null,status:'active',comment:'Действующий партнер'});
+MC['СП RMR (n-ii lab)'].push({mi:5,name:'ВкусВилл',dealSize:100000,status:'signed',comment:'В контрактации'});
+MC['СП RMR (n-ii lab)'].push({mi:5,name:'ВсеИнструменты',dealSize:50000,status:'signed',comment:'В контрактации'});
+MC['СП RMR (n-ii lab)'].push({mi:5,name:'РВИО',dealSize:50000,status:'signed',comment:'В контрактации'});
+MC['СП RMR (n-ii lab)'].push({mi:5,name:'Beyond Taylor',dealSize:20000,status:'signed',comment:'В контрактации'});
+MC['СП RMR (n-ii lab)'].push({mi:5,name:'Спартак',dealSize:4500,status:'neg',comment:''});
+MC['СП RMR (n-ii lab)'].push({mi:6,name:'GigaChat',dealSize:null,status:'lead',comment:'Воронка'});
+MC['СП RMR (n-ii lab)'].push({mi:6,name:'Астра',dealSize:null,status:'lead',comment:'Воронка'});
+MC['СП RMR (n-ii lab)'].push({mi:6,name:'ПСБ Спецтех',dealSize:null,status:'lead',comment:'Воронка'});
+MC['СП RMR (n-ii lab)'].push({mi:6,name:'Mindbox',dealSize:null,status:'lead',comment:'Воронка'});
+MC['СП RMR (n-ii lab)'].push({mi:6,name:'3 Streams',dealSize:null,status:'lead',comment:'Воронка'});
+MC['СП RMR (n-ii lab)'].push({mi:6,name:'Ростелеком',dealSize:null,status:'lead',comment:'Воронка'});
+
 // NOTION_SYNC_END
 
 // ══════════════════════════════
